@@ -1,0 +1,16 @@
+---
+title: "About Me"
+image: kanyecooking.jpg
+about:
+  template: jolla
+  links:
+    - icon: instagram
+      text: Instagram
+      href: https://instagram.com/nimwver
+    - icon: github
+      text: Github
+      href: https://github.com/webplusangels
+
+---
+
+hey...

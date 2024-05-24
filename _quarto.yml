@@ -1,0 +1,20 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "web+pyramid"
+  navbar:
+    right:
+      - about.qmd
+      - icon: github
+        href: https://github.com/webplusangels
+      - icon: instagram
+        href: https://instagram.com/nimwver
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+
+
+
