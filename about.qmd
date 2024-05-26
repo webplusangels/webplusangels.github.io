@@ -1,5 +1,5 @@
 ---
-title: "About Me"
+title: "nimwver"
 image: kanyecooking.jpg
 about:
   template: jolla
@@ -13,4 +13,4 @@ about:
 
 ---
 
-hey...
+ML 개발자를 목표로 공부하고 있습니다. 하지만 공부하고 있지 않는 시간이 많습니다. 이런!

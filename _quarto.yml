@@ -3,10 +3,10 @@ project:
   output-dir: docs
 
 website:
-  title: "web+pyramid"
+  title: "web pyramid"
   navbar:
     right:
-      - about.qmd
+      # - about.qmd
       - icon: github
         href: https://github.com/webplusangels
       - icon: instagram
