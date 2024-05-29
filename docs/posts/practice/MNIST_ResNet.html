@@ -180,11 +180,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="mnist-숫자-분류" class="level1">
 <h1>MNIST 숫자 분류</h1>
-<p><code>PyTorch</code>에서 불러온 모델을 머신러닝에서 가장 유명한 MNIST 손글씨 숫자 데이터 세트의 숫자를 올바르게 분류하는 모델로 만들어 봅니다.</p>
+<p><code>PyTorch</code>에 존재하는 모델을 MNIST 손글씨 숫자 데이터 세트의 숫자를 올바르게 분류하는 모델로 손쉽게 만들어 봅니다.</p>
 <section id="mnist-load" class="level2">
 <h2 class="anchored" data-anchor-id="mnist-load">1. MNIST load</h2>
 <p>MNIST 손글씨 숫자 데이터 세트를 불러오는 방법에는 여러 가지가 있습니다. 간단한 방법으로는 <a href="https://keras.io/api/datasets/mnist/"><code>Keras</code></a>나 <a href="https://www.tensorflow.org/datasets/catalog/mnist"><code>TensorFlow-datasets</code></a>, <a href="https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_digits.html"><code>Scikit-Learn</code></a>을 통해 로드하는 방법 등이 있지만, 그래도 가장 쉬운건 역시 <a href="http://yann.lecun.com/exdb/mnist/">직접 다운로드</a>하는 방법입니다.</p>
-<p>여기선 가장 일반적인 방법은 아니지만 <code>torchvision</code>을 통해 데이터 세트를 다운로드하도록 하겠습니다. 참고로 해당 코드에서는 이 후 <code>PyTorch</code> 사용을 위해 데이터 세트는 다운로드와 동시에 텐서로 변환하겠습니다.</p>
+<p>여기선 가장 일반적인 방법은 아니지만 <code>torchvision</code>을 통해 데이터 세트를 다운로드하도록 하겠습니다. 참고로 해당 코드에서는 이 후 <code>PyTorch</code> 사용을 위해 데이터 세트는 다운로드와 동시에 텐서로 변환(<code>transform</code>)하겠습니다.</p>
 <div id="cell-3" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision <span class="im">import</span> datasets, transforms</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -264,14 +264,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="모델-정의" class="level2">
 <h2 class="anchored" data-anchor-id="모델-정의">3. 모델 정의</h2>
-<p>다음은 <code>torchvision</code>의 <code>models</code> 모듈을 통해 모델(‘ResNet-18’)을 정의합니다. 주의할 점은 MNIST 이미지는 흑백(grayscale) 이미지이기 때문에 이미지 입력 레이어의 채널이 3(RGB)이 아닌 1이 되어야 한다는 것입니다. 또한 이 모델은 분류 모델이므로 출력의 종류를 정의하는 선형 레이어를 추가해야합니다.</p>
+<p>다음은 <code>torchvision</code>의 <code>models</code> 모듈을 통해 모델(‘ResNet-18’)을 정의합니다. 수정할 부분이 거의 없습니다만, 주의할 점이 있다면 MNIST 이미지는 일반적인 이미지와 다르게 흑백(grayscale) 이미지이기 때문에 이미지 입력 레이어의 채널이 3(RGB)이 아닌 1이 되어야 합니다.</p>
 <blockquote class="blockquote">
 <ul>
 <li><strong>Original</strong>: Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)</li>
 <li><strong>After</strong>: Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)</li>
 </ul>
 </blockquote>
-<p>미세 조정(Fine-tuning)을 하고 싶다면 모델을 불러오는 과정에서 <code>pretrained</code> 인자를 <code>True</code>로 하고 이미 학습된 모델의 가중치와 편향 등의 매개변수(parameter)를 고정할 수 있게 모델 매개변수의 <code>requires_grad</code>를 <code>False</code>로 바꿔주면 되니 참고하시기 바랍니다.</p>
+<p>또한 이 모델은 분류 모델이므로 계층의 마지막 단계에 출력의 종류를 정의하는 선형 레이어를 추가해야합니다.</p>
+<blockquote class="blockquote">
+<p>model.fc = torch.nn.Linear(model.fc.in_features, n_classes)</p>
+</blockquote>
+<p>여기선 모델의 구조만을 가지고 오는 것이지만 모델을 처음부터 훈련하는게 아니라 미세 조정(Fine-tuning)을 하고 싶다면, 이미 학습된 모델의 가중치와 편향 등의 매개변수(parameter)를 불러와 고정할 수 있도록 모델을 불러오는 과정에서 <code>pretrained</code> 인자를 <code>True</code>, 모델 매개변수의 <code>requires_grad</code>를 <code>False</code>로 설정하면 됩니다. 주석을 참고하세요.</p>
 <div id="cell-9" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision <span class="im">import</span> models</span>
@@ -279,16 +283,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>n_classes <span class="op">=</span> <span class="dv">10</span></span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> models.resnet18(pretrained<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 미세 조정 시 모델의 매개변수를 고정(freeze)</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co"># for param in model.parameters():</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co">#     param.requires_grad = False</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 모델의 첫 번째 계층을 수정</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>model.conv1 <span class="op">=</span> torch.nn.Conv2d(<span class="dv">1</span>, <span class="dv">64</span>, kernel_size<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">7</span>), stride<span class="op">=</span>(<span class="dv">2</span>, <span class="dv">2</span>), padding<span class="op">=</span>(<span class="dv">3</span>, <span class="dv">3</span>), bias<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="co"># 출력 계층 수정</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>model.fc <span class="op">=</span> torch.nn.Linear(model.fc.in_features, n_classes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># model = models.resnet18(pretrained=True) -&gt; 매개변수도 같이 로드</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 미세 조정 시 모델의 매개변수를 고정(freeze)</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co"># for param in model.parameters():</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co">#     param.requires_grad = False</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 모델의 첫 번째 계층을 수정</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>model.conv1 <span class="op">=</span> torch.nn.Conv2d(<span class="dv">1</span>, <span class="dv">64</span>, kernel_size<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">7</span>), stride<span class="op">=</span>(<span class="dv">2</span>, <span class="dv">2</span>), padding<span class="op">=</span>(<span class="dv">3</span>, <span class="dv">3</span>), bias<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 출력 계층 수정</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>model.fc <span class="op">=</span> torch.nn.Linear(model.fc.in_features, n_classes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="손실-함수와-최적화-함수-cuda" class="level2">
@@ -301,7 +306,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>n_epochs <span class="op">=</span> <span class="dv">15</span></span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>scheduler <span class="op">=</span> torch.optim.lr_scheduler.StepLR(optim, step_size<span class="op">=</span><span class="dv">5</span>, gamma<span class="op">=</span><span class="fl">0.1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>GPU 설정을 위해 device 변수를 정의합니다. Nvidia GPU를 사용할 수 있는 환경이라면 ’cuda’를, 그 외에는 ’cpu’를 사용합니다. GPU에서 훈련시키기 위해서는 훈련에 필요한 모든 변수를 GPU로 이동시켜야 합니다. 이를 위해 <code>.to(device)</code>를 사용해 모델을 옮깁니다. 아래 훈련 부분에서도 반복하여 사용됩니다.</p>
+<p>GPU 설정을 위해 <code>device</code> 변수를 정의합니다. 해당 변수는 Nvidia GPU를 사용할 수 있는 환경이라면 ’cuda’를, 그 외에는 ’cpu’를 사용합니다. GPU에서 모델을 훈련시키기 위해선 훈련에 필요한 모든 변수를 GPU로 이동시켜야 합니다. 이를 위해 <code>.to(device)</code>를 사용해 모델을 <code>device</code>로 옮깁니다. 이 과정은 아래 훈련 부분에서도 반복하여 사용됩니다.</p>
 <div id="cell-13" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>device <span class="op">=</span> <span class="st">'cuda'</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">'cpu'</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> model.to(device)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -310,7 +315,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="훈련" class="level2">
 <h2 class="anchored" data-anchor-id="훈련">5. 훈련</h2>
 <p>훈련 루프를 작성합니다. train 모드와 eval 모드로 나누어 한 에포크의 훈련이 끝날 때 마다 검증 세트로 성능을 평가합니다. 설정한 에포크 수 만큼 훈련합니다.</p>
-<p>성능 평가 시엔 손실도 같이 보는 경우도 많지만, 이를 확인하는 방법 또한 정확도 계산과 크게 차이가 없습니다. 손실을 구하는 방법은 주석으로 달아놨으니 참고하시면 되겠습니다.</p>
+<p>성능 평가 시엔 손실을 같이 보는 경우도 많고, 이를 확인하는 방법 또한 정확도 계산과 크게 차이가 없습니다. 주석을 참고하세요.</p>
 <div id="cell-15" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(n_epochs):</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    </span>
@@ -364,7 +369,7 @@ Epoch: 11, Accuracy on validation set: 98 %</code></pre>
 <pre><code>KeyboardInterrupt: </code></pre>
 </div>
 </div>
-<p>정확도를 확인하며 적당한 시점에 훈련을 멈추는 것도 괜찮습니다.</p>
+<p>정확도를 확인하며 더 이상 개선이 어렵다고 판단되면 적당한 시점에 훈련을 멈추는 것도 좋은 방법입니다.</p>
 </section>
 <section id="결과" class="level2">
 <h2 class="anchored" data-anchor-id="결과">6. 결과</h2>
@@ -391,7 +396,7 @@ Epoch: 11, Accuracy on validation set: 98 %</code></pre>
 </div>
 <p>테스트 세트 기준, 이 모델은 99% 정도의 정확도로 MNIST 데이터 셋을 올바르게 분류할 수 있는 것을 확인할 수 있었습니다.</p>
 <hr>
-<p>이렇게 비교적 간단한 방법으로 MNIST 손글씨 숫자 데이터 셋을 분류하는 모델을 만들어 봤습니다. <a href="https://velog.io/@lighthouse97/ResNet%EC%9D%98-%EC%9D%B4%ED%95%B4">ResNet</a>과 같은 모델을 사용하면 시간을 크게 들이지 않고 정확도가 높은 모델을 만들어 낼 수 있습니다.</p>
+<p>이렇게 비교적 간단한 방법으로 MNIST 손글씨 숫자 데이터 셋을 분류하는 모델을 만들어 봤습니다. <a href="https://velog.io/@lighthouse97/ResNet%EC%9D%98-%EC%9D%B4%ED%95%B4">ResNet</a>과 같은 구조적으로 증명된 모델을 사용하면 시간을 크게 들이지 않고 정확도가 높은 모델을 만들어 낼 수 있습니다.</p>
 <p>다음 시간에도 엔지니어링 관점에서 머신러닝을 잘 활용할 수 있는 포스트로 만나뵙겠습니다.</p>
 <p><em>Ciao!</em></p>
 
