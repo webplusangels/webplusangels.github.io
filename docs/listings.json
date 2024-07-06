@@ -2,7 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
-      "/posts/face-detection_1/face-detection_01.html",
+      "/posts/face-detection/face-detection_01.html",
       "/posts/practice/MNIST_ResNet.html"
     ]
   }
