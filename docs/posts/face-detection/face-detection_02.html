@@ -509,14 +509,32 @@ window.Quarto = {
 <li>정확하게 출력합니다.</li>
 </ol>
 <p>다음은 데이터 셋 외부의 이미지로, 다른 걸그룹 혹은 클래스에 존재하지 않는 사람과의 이미지에서 테스트 해보겠습니다.</p>
-<p><img src="img/output_03.png" class="img-fluid" alt="Test Case 3"> 뉴진스 다섯 멤버는 모두 꽤 높은 정도로 인식하는 모습입니다.</p>
-<p><img src="img/output_04.png" class="img-fluid" alt="Test Case 4"> 이 이미지에선 클래스 내부에서 찾을 수 없는 인물 또한 잘 구분해 올바르게 매치합니다.</p>
-<p><img src="img/output_05.png" class="img-fluid" alt="Test Case 5"> 다만 여기선 다른 사람을 인식하는 모습입니다.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/output_03.png" class="img-fluid figure-img"></p>
+<figcaption>Test Case 3</figcaption>
+</figure>
+</div>
+<p>뉴진스 다섯 멤버는 모두 꽤 높은 정도로 인식하는 모습입니다.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/output_04.png" class="img-fluid figure-img"></p>
+<figcaption>Test Case 4</figcaption>
+</figure>
+</div>
+<p>이 이미지들에선 클래스 내부에서 찾을 수 없는 인물 또한 잘 구분해 올바르게 매치합니다.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/output_05.png" class="img-fluid figure-img"></p>
+<figcaption>Test Case 5</figcaption>
+</figure>
+</div>
+<p>다만 여기선 인식의 정도가 높진 않지만 다른 사람을 인식하는 모습입니다.</p>
 </section>
 <section id="결론" class="level2">
 <h2 class="anchored" data-anchor-id="결론">결론</h2>
-<p>InsightFace의 임베딩을 사용하면 저번 시간에 시도했던 이미지 인식 모델보다 정확도가 상당히 높아진다는 것을 알 수 있었습니다. 또한 InsightFace가 사용하는 얼굴 인식에 특화된 손실 함수 ArcFace가 왜 정확도가 높은지, 여기에 쓰이는 코사인 유사도와 구현 등에 대해서 자세히 알아보았습니다.</p>
-<p>여기서 더 정확도를 높이기 위해서는, 이미지 선별을 통해 좋은 임베딩을 추출하고, 임베딩의 수를 늘려서 일반화 정도를 높이는 방안이 고려됩니다. 현재의 적은 클래스를 감안하면, 클래스의 수를 늘린 후에도 정확도를 높일 수 있을지 실험이 더 필요하겠습니다.</p>
+<p>InsightFace의 임베딩을 사용하면 저번 시간에 시도했던 이미지 인식 모델보다 정확도가 상당히 높아진다는 것을 알 수 있었습니다. 또한 InsightFace가 사용하는 얼굴 인식에 특화된 손실 함수 ArcFace가 왜 정확도가 높은지, 코사인 유사도와 구현 등에 대해서 자세히 알아보았습니다.</p>
+<p>여기서 더 정확도를 높이기 위해서는, 이미지 선별을 통해 좋은 임베딩을 추출하고, 임베딩의 수를 늘려서 일반화 정도를 높이는 방안이 고려됩니다. 현재의 적은 클래스를 감안하면, 클래스의 수를 늘린 후에도 정확도를 높일 수 있을지는 실험이 더 필요하겠습니다.</p>
 <p>얼굴 인식에 대한 글은 이만 줄이고 다음 시간에는 조금 더 재밌는 포스트로 찾아 오겠습니다.</p>
 <p><em>Ciao!</em></p>
 </section>
