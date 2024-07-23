@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.550">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2024-07-23">
+<meta name="description" content="임베딩을 활용한 얼굴 인식 시스템을 만들어봅니다.">
+
+<title>webpyramid - 아이돌 얼굴 인식 - InsightFace</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">webpyramid</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/webplusangels"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://instagram.com/nimwver"> <i class="bi bi-instagram" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">아이돌 얼굴 인식 - InsightFace</h1>
+                  <div>
+        <div class="description">
+          임베딩을 활용한 얼굴 인식 시스템을 만들어봅니다.
+        </div>
+      </div>
+                          <div class="quarto-categories">
+                <div class="quarto-category">code</div>
+                <div class="quarto-category">jupyter</div>
+                <div class="quarto-category">InsightFace</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">July 23, 2024</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<p>저번 포스트에 이어 이번 포스트에서도 얼굴 인식 모델에 대해 탐구합니다.</p>
+<hr>
+<section id="insightface란" class="level1">
+<h1>0. InsightFace란?</h1>
+<p><strong>InsightFace</strong> 는 이름에서 유추할 수 있듯, 얼굴 인식(Face Recognition)에 쓰이는 프레임워크입니다. 최근 몇 년 동안 급속도로 발전한 얼굴 인식 기술에서 <a href="https://paperswithcode.com/task/face-recognition">가장 주목받는 라이브러리</a>라고 해도 과언이 아닐 정도입니다. 또한 현재까지도 최첨단(State-of-the-art)에 근사할 정도로 뛰어난 성능을 발휘하기도 합니다.</p>
+<p>오늘 InsightFace에서 집중해서 공부해볼 타 프레임워크와의 가장 큰 차별점이자 핵심 요소는 <strong>ArcFace</strong> 라는 손실 함수입니다.</p>
+<section id="arcface" class="level2">
+<h2 class="anchored" data-anchor-id="arcface">ArcFace</h2>
+<p><strong>ArcFace</strong> 는 다른 손실 함수와 달리 유클리드 거리(Euclidean Distance)가 아닌 두 벡터 간의 거리인 각거리(Angular Distance), 즉 각도 유사성(Angular Smiliarity)을 측정합니다. 유클리드 거리는 얼굴 데이터와 같은 고차원 공간에서는 의미가 줄어들기 쉽습니다. 반면 각거리는 사진마다 변화가 많은 얼굴 이미지에서 추출한 특징 벡터의 방향성만을 고려하기 때문에, 벡터의 스케일까지 고려하는 유클리드 거리보다 변화의 영향을 덜 받으며 의미를 보존할 가능성이 비교적 높습니다. 이로 인해 접근 방식이 안정적이며, 이는 결과적으로 모델의 일반화 능력을 향상시킵니다.</p>
+<p>또한 ArcFace의 특징 벡터는 <strong>정규화</strong> 됩니다. 이로 인해 두 벡터의 유사도는 벡터의 스케일 변화 대신 방향의 차이만을 감안하게 됩니다. 아래의 이미지에서 확인할 수 있듯, Softmax의 예측은 하이퍼스피어의 표면에 존재하는 클래스(색)의 범위가 명확하지 않지만, ArcFace는 정규화된 까닭에 반지름이 고정된 하이퍼스피어의 표면에서의 클래스 각각의 위치를 명확하게 구분할 수 있습니다.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/img_arcface_01.png" class="img-fluid figure-img"></p>
+<figcaption>출처: ArcFace: Additive Angular Margin Loss for Deep Face Recognition, [Fig. 3]</figcaption>
+</figure>
+</div>
+<p>공식은 아래와 같습니다. 여기서 <span class="math inline">\(\theta_{y_i}\)</span>는 올바른 클래스의 각도, <span class="math inline">\(m\)</span>은 가산 마진(additive margin) - (일반적으로 0.5 정도의 <span class="math inline">\(m\)</span>은 28.6도 정도의 각도), <span class="math inline">\(s\)</span>는 학습 안정성을 위한 스케일링 팩터입니다. ArcFace가 최적화하는 대상은 특징 벡터와 클래스 중심 사이의 각도입니다. 서로 다른 클래스끼리는 마진 값 덕분에 훈련 과정에서 클래스마다 방향을 중심으로 확실히 분리됩니다.</p>
+<p><span class="math display">\[L = - \frac{1}{N} \sum_{i=1}^N \log \frac{e^{s \cdot (\cos(\theta_{y_i} + m))}}{e^{s \cdot (\cos(\theta_{y_i} + m))} + \sum_{j \neq y_i} e^{s \cdot \cos(\theta_j)}}\]</span></p>
+<p>ArcFace는 기존의 얼굴 인식 모델과 비교할 때 눈에 띄는 장점을 보여줍니다. 예를 들어 FaceNet에서 사용하는 삼중항 손실(Triplet Loss)에 비해서, ArcFace는 효율적인 계산을 수행하며 구현하기 쉽고, 샘플 선택에 있어 더 자유롭습니다. 또한 곱 마진을 사용하는 SphereFace와 달리, 합 마진을 사용하기 때문에 비교적 안정적인 성능을 보여줍니다. LFW를 비롯한 벤치마크에서도 99.8% 이상의 정확도를 보이는 등 ArcFace의 뛰어난 성능을 쉽게 확인할 수 있습니다.</p>
+</section>
+<section id="다른-손실-함수와의-비교" class="level2">
+<h2 class="anchored" data-anchor-id="다른-손실-함수와의-비교">다른 손실 함수와의 비교</h2>
+<p>얼굴 인식에 주로 쓰이는 마진 기반의 손실 함수들인 <code>SphereFace</code>, <code>CosFace</code>, <code>ArcFace</code>를 표로 비교해 보았습니다. 셋 모두 기존의 Softmax보다는 성능이 훨씬 뛰어나며, 주요 벤치마크에서의 성능은 SphereFace &lt; CosFace &lt;= ArcFace 입니다.</p>
+<table class="table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 25%">
+<col style="width: 30%">
+<col style="width: 27%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>손실 함수</th>
+<th>SphereFace</th>
+<th>CosFace (AM-Softmax)</th>
+<th>ArcFace</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>마진의 종류</td>
+<td>곱 각도(Multiplicative Angular)</td>
+<td>가산 코사인(Additive Cosine)</td>
+<td>가산 각도(Additive Angular)</td>
+</tr>
+<tr class="even">
+<td>작동 공간</td>
+<td>각 공간</td>
+<td>코사인 공간</td>
+<td>각 공간</td>
+</tr>
+<tr class="odd">
+<td>최적화 방식</td>
+<td>간접적</td>
+<td>간접적</td>
+<td>직접적</td>
+</tr>
+<tr class="even">
+<td>훈련 안정성</td>
+<td>마진의 곱 계산으로 인해 불안정 가능성</td>
+<td>대체적으로 안정적</td>
+<td>대체적으로 안정적</td>
+</tr>
+<tr class="odd">
+<td>해석 가능성</td>
+<td>보통</td>
+<td>보통</td>
+<td>높음 (직접 각도를 수정)</td>
+</tr>
+<tr class="even">
+<td>구현 난이도</td>
+<td>어려움</td>
+<td>쉬움</td>
+<td>쉬움</td>
+</tr>
+<tr class="odd">
+<td>성능</td>
+<td>좋음</td>
+<td>매우 좋음</td>
+<td>우수함</td>
+</tr>
+<tr class="even">
+<td>주요 특징</td>
+<td>각도 마진을 최초로 도입</td>
+<td>간단하고 효과적임</td>
+<td>측지(Geodesic) 거리를 직접 최적화</td>
+</tr>
+<tr class="odd">
+<td>단점</td>
+<td>수렴 가능성</td>
+<td>기하학적인 해석이 어려움</td>
+<td>마진 선택의 중요성</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="구현" class="level2">
+<h2 class="anchored" data-anchor-id="구현">구현</h2>
+<p>PyTorch로 ArcFace 손실 함수를 직접 구현해 보도록 하겠습니다. 전체 코드는 다음과 같습니다.</p>
+<script src="https://gist.github.com/webplusangels/2996fb80caf9c8a6277bb760311886c2.js?file=ArcFace.py"></script>
+<p>위에서부터 차례차례 살펴보겠습니다. 우선 클래스 초기화 과정에 대해 설명하겠습니다.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, in_features, out_features, s<span class="op">=</span><span class="fl">64.0</span>, m<span class="op">=</span><span class="fl">0.5</span>):</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>(ArcFace, <span class="va">self</span>).<span class="fu">__init__</span>()</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.in_features <span class="op">=</span> in_features                      </span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.out_features <span class="op">=</span> out_features                    </span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.s <span class="op">=</span> s                                          </span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.m <span class="op">=</span> m                                          </span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.weight <span class="op">=</span> nn.Parameter(torch.FloatTensor(out_features, in_features))</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        nn.init.xavier_uniform_(<span class="va">self</span>.weight)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><code>in_feature</code>의 정확한 이름은 ’Input Feature’로 이를테면 합성곱 신경망(CNN)을 거쳐 출력된 고차원의 특징 벡터, 즉 얼굴 임베딩 벡터의 차원의 수를 말합니다. 512(차원)과 같은 고정된 크기로 출력됩니다.</li>
+<li><code>out_feature</code>는 클래스의 크기, 즉 구분해야 할 종류를 말합니다.</li>
+<li>하이퍼 파라미터인 <code>s</code>는 스케일링 팩터, <code>m</code>은 마진 값으로 여기선 각각 64와 0.5의 일반적인 기본값으로 설정하며, 이들은 훈련 과정에서 클래스 간 구분을 강화시킵니다.</li>
+<li><code>weight</code>의 각 행은 특징 공간에서의 클래스를 뜻하며, 값 하나 하나가 공간 내에서의 클래스의 방향을 정의합니다. 훈련 안정성과 수렴을 위해 가중치 값은 균일 분포 값으로 초기화합니다.</li>
+</ul>
+<p>이어서 손실을 계산하는 함수 <code>forward</code>에 대해 설명하겠습니다.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>        normalized_input <span class="op">=</span> F.normalize(<span class="bu">input</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>        normalized_weight <span class="op">=</span> F.normalize(<span class="va">self</span>.weight)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>Input Feature와 가중치(weight)를 정규화합니다. 정규화는 ArcFace의 중요한 특징으로 앞서 나왔던 내용입니다.</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>        cos_theta <span class="op">=</span> F.linear(normalized_input, normalized_weight)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        theta <span class="op">=</span> torch.acos(cos_theta.clamp(<span class="op">-</span><span class="fl">1.0</span> <span class="op">+</span> <span class="fl">1e-7</span>, <span class="fl">1.0</span> <span class="op">-</span> <span class="fl">1e-7</span>))</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        target_logit <span class="op">=</span> torch.cos(theta <span class="op">+</span> <span class="va">self</span>.m)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>Input과 가중치의 <code>F.linear</code>(Dot Product, <span class="math inline">\(\cdot\)</span>)를 계산합니다. 다시 말해 해당 식은 Input Feature의 방향과 각 클래스의 중심 사이의 각도(<span class="math inline">\(\theta\)</span>)에 대한 코사인을 구하게 됩니다. 자세한 내용은 Dot Product와 코사인의 관계를 참고하세요.</li>
+<li><span class="math inline">\(\theta\)</span>값을 도출해내기 위해 <code>acos</code>(아크코사인)을 적용합니다. <code>clamp</code> 함수는 [-1. 1] 범위의 입력에만 정의된 아크코사인 함수를 위해 사용됩니다.</li>
+<li><span class="math inline">\(\theta\)</span>값에 마진을 더해 다시 코사인으로 변환한 값을 <code>target_logit</code>으로 정의합니다.</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>        one_hot <span class="op">=</span> torch.zeros_like(cos_theta)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>        one_hot.scatter_(<span class="dv">1</span>, label.view(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>), <span class="fl">1.0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>올바른 클래스를 찾기 위해 원-핫 인코딩을 생성합니다.</li>
+</ul>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>        output <span class="op">=</span> (one_hot <span class="op">*</span> target_logit) <span class="op">+</span> ((<span class="fl">1.0</span> <span class="op">-</span> one_hot) <span class="op">*</span> cos_theta)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        output <span class="op">*=</span> <span class="va">self</span>.s</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> F.cross_entropy(output, label)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>마진 값이 들어간 코사인 값인 <code>target_logit</code>을 올바른 클래스에만 적용시킵니다. 일치하는 클래스에 한해 마진을 더해 코사인 유사성을 올리는 것 입니다.</li>
+<li>스케일링 계수를 곱하고, 마지막으로 교차 엔트로피 손실을 계산합니다.</li>
+</ul>
+</section>
+<section id="시각화" class="level2">
+<h2 class="anchored" data-anchor-id="시각화">시각화</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/img_arcface_03.png" class="img-fluid figure-img"></p>
+<figcaption>Feature Space</figcaption>
+</figure>
+</div>
+<p>이미지는 검은색, 살구색, 붉은색 3개의 클래스를 생성해 ArcFace로 분류한 하이퍼 스피어를 2차원 평면에서 보여주고 있습니다. 가로축은 class 0과의 코사인 유사도, 세로축은 class 1과의 코사인 유사도를 뜻합니다.</p>
+<p>검은색 클래스는 class 0과 class 1 그 어디에도 속하지 않는다고 볼 수 있는데, 이는 두 클래스와의 유사도 모두 -1 구간에 집중되어 분포하고 있는 클래스들의 색이 검은색인 것으로 확인할 수 있습니다. 이는 모두 같은 크기의 호를 가진 하이퍼 스피어의 클래스들이 각도 공간에서 뚜렷한 차이를 보여주며 ArcFace가 세 클래스를 학습하고 명확하게 분리했음을 보여줍니다.</p>
+</section>
+</section>
+<section id="face-임베딩-과정" class="level1">
+<h1>1. Face 임베딩 과정</h1>
+<p>다시 얼굴 인식으로 돌아가 보겠습니다. 여기서부터는 윤용선님의 Medium 포스트인 <a href="https://medium.com/@yongsun.yoon/nba-face-recognition-system-345034ffed8c">NBA Face Recognition System using InsightFace by Yongsun Yoon</a>을 참고했습니다.</p>
+<p>InsightFace를 이용해 간단한 방법으로 얼굴 인식의 정확도를 올릴 수 있는데요. 이들 각각 클래스마다 얼굴의 임베딩을 추출한 후, 각 클래스의 임베딩을 저장하는 것입니다. 그런 다음 새로운 얼굴을 이들과 대조하는 방식으로 클래스 구분을 진행합니다. 일치율을 체크해 가장 높은 클래스가 정답이 될 것입니다. 다만 여기서 어떤 클래스와도 일치율이 임계값을 넘지 않는다면, <code>unknown</code>(알 수 없는)으로 구분됩니다.</p>
+<p>그렇다면 우선 임베딩을 구하는 방식에 대해 알아보겠습니다.</p>
+<section id="임베딩-구하기" class="level2">
+<h2 class="anchored" data-anchor-id="임베딩-구하기">임베딩 구하기</h2>
+<p>일단 InsightFace에서 모델을 가져와야 합니다. <a href="https://github.com/deepinsight/insightface">InsightFace의 깃허브 페이지</a>에서도 모델을 다운받고 직접 모델을 로드할 수 있으나, 여기서는 편의성을 위해 이전 포스트와 같이 파이썬 패키지를 통해 다운하고 로드하겠습니다. 모델의 크기를 직접 지정해야 하는 등의 세부 설정이 필요하다면 <a href="https://github.com/deepinsight/insightface/tree/master/python-package">링크</a>를 참조하시기 바랍니다.</p>
+<script src="https://gist.github.com/webplusangels/2996fb80caf9c8a6277bb760311886c2.js?file=load_model.py"></script>
+<p>임베딩 추출에 적합하지 않은 경우는 두 가지 입니다.</p>
+<ol type="1">
+<li>사진 내의 인식되는 얼굴이 여러 개일 경우</li>
+<li>Detection Score가 수준 이하일 때</li>
+</ol>
+<p>다음은 코드를 통해 알아본 임의의 이미지 100개 중 부적합한 이미지들의 예시입니다. 얼굴 불인식의 기준은 Detection Score=0.63 미만입니다.</p>
+<div id="cell-7" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">20</span>, <span class="dv">20</span>))</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>d_faces <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>file_paths <span class="op">=</span> [Path(category)<span class="op">/</span>Path(filename) <span class="cf">for</span> category <span class="kw">in</span> categories <span class="cf">for</span> filename <span class="kw">in</span> os.listdir(raw_dir<span class="op">/</span>category)]</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>random.shuffle(file_paths)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 임의의 이미지 100개를 평가</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">100</span>):    </span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    file_path <span class="op">=</span> raw_dir<span class="op">/</span>file_paths[i]</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    img <span class="op">=</span> cv2.imread(<span class="bu">str</span>(file_path))</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    faces <span class="op">=</span> model.get(img)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 1. 이미지 내 얼굴이 1개가 아닐 경우</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">len</span>(faces) <span class="op">!=</span> <span class="dv">1</span>:</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        d_faces <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>        img_rgb <span class="op">=</span> cv2.cvtColor(img, cv2.COLOR_BGR2RGB)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>        plt.subplot(<span class="dv">5</span>, <span class="dv">10</span>, d_faces)</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>        plt.axis(<span class="st">'off'</span>)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>        plt.imshow(img_rgb)</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>        plt.title(<span class="ss">f'</span><span class="sc">{</span><span class="bu">len</span>(faces)<span class="op">=</span><span class="sc">}</span><span class="ss">'</span>)</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">continue</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> face <span class="kw">in</span> faces:</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 2. 얼굴 인식 점수가 낮을 경우</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> face.det_score <span class="op">&lt;</span> <span class="fl">0.63</span>:    </span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>            d_faces <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>            (x1, y1, x2, y2) <span class="op">=</span> <span class="bu">map</span>(<span class="bu">int</span>, face.bbox)</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>            face_img <span class="op">=</span> img[y1:y2, x1:x2]</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> face_img.size <span class="op">&gt;</span> <span class="dv">0</span>:   </span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>                cv2.rectangle(img, (x1, y1), (x2, y2), (<span class="dv">0</span>, <span class="dv">255</span>, <span class="dv">0</span>), <span class="dv">2</span>)</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>            img_rgb <span class="op">=</span> cv2.cvtColor(img, cv2.COLOR_BGR2RGB)</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>            plt.subplot(<span class="dv">5</span>, <span class="dv">10</span>, d_faces)</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>            plt.axis(<span class="st">'off'</span>)</span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>            plt.imshow(img_rgb)</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>            plt.title(<span class="ss">f'</span><span class="sc">{</span>face<span class="sc">.</span>det_score<span class="sc">:.2f}</span><span class="ss">'</span>)</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/img_embedding_01.png" class="img-fluid figure-img"></p>
+<figcaption>Examples</figcaption>
+</figure>
+</div>
+<p>이들의 임베딩을 구해서 저장해 보겠습니다.</p>
+<script src="https://gist.github.com/webplusangels/2996fb80caf9c8a6277bb760311886c2.js?file=embeddings.py"></script>
+</section>
+<section id="평가" class="level2">
+<h2 class="anchored" data-anchor-id="평가">평가</h2>
+<p>위의 코드는 각각 클래스마다 30개의 임베딩을 추출하고, 15개는 얼굴 인식 임베딩(<code>known_embeddings</code>), 나머지 15개는 임베딩의 정확도를 평가하기 위한 임베딩(<code>unknown_embeddings</code>)으로 저장합니다. 평가 방식은 제가 참고한 글에서도 이미 언급했듯이, Flatten(평탄화)된 임베딩보다는 임베딩 Average(평균)와 비교하여 인식하는 편이 성능이 낫습니다.</p>
+<p>이유는 일반화 능력 향상에 있습니다. Average 방식은 같은 얼굴의 여러 임베딩을 평균 계산하여 노이즈와 이상치 확률을 감소시킵니다. 사진에서 볼 수 있는 같지만 변형된 얼굴을 일반화하므로 정확도 향상에 도움이 됩니다. 반면 Flatten 방식이 유리한 점은 계산이 간단하다는 것입니다. 임베딩이 제대로 추출했다는 가정하에는 좋은 결과를 보여줄 수 있습니다.</p>
+<p>따라서 저는 Average 방식으로만 임베딩을 평가하고 테스트에 사용하겠습니다. Threshold에 따른 <code>unknown_embedding</code>의 평가 결과입니다. 그래프에서 Accuracy는 얼굴 일치 여부를 Coverage는 얼굴 식별 여부를 뜻합니다.</p>
+<div id="cell-10" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a range of threshold values</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>threshold_values <span class="op">=</span> np.arange(<span class="fl">0.1</span>, <span class="fl">1.0</span>, <span class="fl">0.05</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Lists to store the averages for each threshold</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>acc_averages <span class="op">=</span> []</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>cov_averages <span class="op">=</span> []</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> threshold <span class="kw">in</span> threshold_values:</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    pred_names <span class="op">=</span> search_average(known_embeddings, known_names, unknown_embeddings, threshold<span class="op">=</span>threshold)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    acc_average, cov_average <span class="op">=</span> evaluate(unknown_names, pred_names)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    acc_averages.append(acc_average)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    cov_averages.append(cov_average)</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Plotting</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>plt.plot(threshold_values, acc_averages, label<span class="op">=</span><span class="st">'Accuracy Average'</span>, marker<span class="op">=</span><span class="st">'o'</span>)</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>plt.plot(threshold_values, cov_averages, label<span class="op">=</span><span class="st">'Coverage Average'</span>, marker<span class="op">=</span><span class="st">'x'</span>)</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Threshold'</span>)</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Average Value'</span>)</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Evaluation Metrics by Threshold'</span>)</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>plt.grid(<span class="va">True</span>)</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/img_embedding_02.png" class="img-fluid figure-img"></p>
+<figcaption>Embedding Graph</figcaption>
+</figure>
+</div>
+<p>0.4를 지나기 전에 두 선이 교차하는 구간이, 0.6을 지나자 두 지수 모두 급격하게 감소하는 구간이 관찰됩니다. 교차하는 구간인 0.3 정도를 최적의 Threshold로 정하겠습니다.</p>
+</section>
+<section id="테스트" class="level2">
+<h2 class="anchored" data-anchor-id="테스트">테스트</h2>
+<p>먼저 데이터 셋 내의 랜덤한 이미지를 대상으로 인식한 결과입니다.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/output_01.png" class="img-fluid figure-img"></p>
+<figcaption>Test Case 1</figcaption>
+</figure>
+</div>
+<p>이 둘은 일치하는 인물에 0.4 이상의 인식률을 보이며, 인식할 수 있는 모든 인물 내에서 큰 차이 또한 나타냅니다.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/output_02.png" class="img-fluid figure-img"></p>
+<figcaption>Test Case 2</figcaption>
+</figure>
+</div>
+<ol type="1">
+<li>두 사람의 얼굴이 포착됐지만, 클래스에 존재하지 않는 한 사람은 0에 가까운 유사도를 보이기 때문에 인식되지 않습니다. 인식된 연예인은 역시 0.4 이상 일치하는 결과를 보여줍니다.</li>
+<li>역시 0.5 이상의 일치율을 보입니다.</li>
+<li>유사도가 가장 높은 인물은 정확하지만 임계 값을 넘지 못해 unknown으로 출력됩니다.</li>
+<li>정확하게 출력합니다.</li>
+</ol>
+<p>다음은 데이터 셋 외부의 이미지로, 다른 걸그룹 혹은 클래스에 존재하지 않는 사람과의 이미지에서 테스트 해보겠습니다.</p>
+<p><img src="img/output_03.png" class="img-fluid" alt="Test Case 3"> 뉴진스 다섯 멤버는 모두 꽤 높은 정도로 인식하는 모습입니다.</p>
+<p><img src="img/output_04.png" class="img-fluid" alt="Test Case 4"> 이 이미지에선 클래스 내부에서 찾을 수 없는 인물 또한 잘 구분해 올바르게 매치합니다.</p>
+<p><img src="img/output_05.png" class="img-fluid" alt="Test Case 5"> 다만 여기선 다른 사람을 인식하는 모습입니다.</p>
+</section>
+<section id="결론" class="level2">
+<h2 class="anchored" data-anchor-id="결론">결론</h2>
+<p>InsightFace의 임베딩을 사용하면 저번 시간에 시도했던 이미지 인식 모델보다 정확도가 상당히 높아진다는 것을 알 수 있었습니다. 또한 InsightFace가 사용하는 얼굴 인식에 특화된 손실 함수 ArcFace가 왜 정확도가 높은지, 여기에 쓰이는 코사인 유사도와 구현 등에 대해서 자세히 알아보았습니다.</p>
+<p>여기서 더 정확도를 높이기 위해서는, 이미지 선별을 통해 좋은 임베딩을 추출하고, 임베딩의 수를 늘려서 일반화 정도를 높이는 방안이 고려됩니다. 현재의 적은 클래스를 감안하면, 클래스의 수를 늘린 후에도 정확도를 높일 수 있을지 실험이 더 필요하겠습니다.</p>
+<p>얼굴 인식에 대한 글은 이만 줄이고 다음 시간에는 조금 더 재밌는 포스트로 찾아 오겠습니다.</p>
+<p><em>Ciao!</em></p>
+</section>
+</section>
+<section id="참조" class="level1">
+<h1>참조</h1>
+<p><a href="https://arxiv.org/abs/1801.07698">ArcFace 논문 (ArcFace: Additive Angular Margin Loss for Deep Face Recognition)</a></p>
+<p><a href="https://medium.com/@yongsun.yoon/nba-face-recognition-system-345034ffed8c">NBA Face Recognition System using InsightFace by Yongsun Yoon</a></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
